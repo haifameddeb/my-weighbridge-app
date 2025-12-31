@@ -7,16 +7,16 @@ def init_db():
     
     # Vérification si la colonne correcte existe, sinon on recrée
     try:
-        c.execute("SELECT TRANPORTEUR FROM flux_camions LIMIT 1")
+        c.execute("SELECT TRANSPORTEUR FROM flux_camions LIMIT 1")
     except sqlite3.OperationalError:
-        # Si erreur, cela signifie que la colonne TRANPORTEUR n'existe pas
+        # Si erreur, cela signifie que la colonne TRANSPORTEUR n'existe pas
         # On supprime et on recrée avec la bonne structure
         c.execute("DROP TABLE IF EXISTS flux_camions")
         c.execute('''CREATE TABLE flux_camions
                      (NUM_QUIT TEXT, 
                       NUM_PESEE TEXT, 
                       CAMION TEXT, 
-                      TRANPORTEUR TEXT, 
+                      TRANSPORTEUR TEXT, 
                       DH_TARE TEXT, 
                       TARE REAL, 
                       STATUT TEXT, 
@@ -33,3 +33,4 @@ def init_db():
 
 if __name__ == "__main__":
     init_db()
+
