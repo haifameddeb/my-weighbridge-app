@@ -3,3 +3,5 @@ pandas
 sqlalchemy
 plotly
 openpyxl
+opencv-python-headless
+pyzbar
