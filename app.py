@@ -5,6 +5,21 @@ from database import init_db, get_all_pesees, get_dashboard_metrics
 # Configuration de la page
 st.set_page_config(page_title="Pont Bascule - Medigrain", page_icon="📊", layout="wide")
 
+# Cacher le footer "Created by..." et le menu Streamlit
+st.markdown("""
+    <style>
+    /* Cache le footer "Made with Streamlit" */
+    footer {visibility: hidden;}
+    
+    /* Cache le bouton 'Manage App' et les infos de déploiement pour les non-admin */
+    header {visibility: hidden;}
+    
+    /* Optionnel : Supprimer le padding en haut pour gagner de l'espace */
+    .block-container {
+        padding-top: 1rem;
+    }
+    </style>
+""", unsafe_allow_html=True)
 # Initialisation BDD
 init_db()
 
@@ -64,3 +79,4 @@ if not df.empty:
     st.dataframe(df[["matricule_camion", "produit", "poids_tare", "statut", "date_heure_entree"]], use_container_width=True, hide_index=True)
 else:
     st.info("Aucun mouvement enregistré aujourd'hui.")
+
