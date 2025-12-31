@@ -2,20 +2,20 @@ import streamlit as st
 import pandas as pd
 from database import init_db, get_all_pesees, get_dashboard_metrics
 
-# Configuration de la page
+# 1. Configuration de la page
 st.set_page_config(page_title="Pont Bascule - Medigrain", page_icon="📊", layout="wide")
 
-# Initialisation BDD
+# 2. Initialisation BDD
 init_db()
 
-# Hack CSS pour masquer les éléments Streamlit et styliser les cartes
+# 3. Hack CSS pour masquer les éléments Streamlit et nettoyer l'UI
 st.markdown("""
     <style>
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     header {visibility: hidden;}
     .main { background-color: #f5f5f5; }
-    .stButton>button { width: 100%; border-radius: 10px; background-color: #E63946; color: white; }
+    .stButton>button { width: 100%; border-radius: 10px; background-color: #E63946; color: white; height: 3em; font-weight: bold;}
     </style>
 """, unsafe_allow_html=True)
 
@@ -26,6 +26,7 @@ if 'authenticated' not in st.session_state:
 if not st.session_state.authenticated:
     _, col_card, _ = st.columns([1, 2, 1])
     with col_card:
+        st.markdown("<br><br>", unsafe_allow_html=True)
         st.title("🔐 Authentification")
         username = st.text_input("Identifiant")
         password = st.text_input("Mot de passe", type="password")
@@ -37,7 +38,7 @@ if not st.session_state.authenticated:
                 st.error("Identifiant ou mot de passe incorrect")
     st.stop()
 
-# --- AFFICHAGE DU TABLEAU DE BORD (Dès le lancement) ---
+# --- AFFICHAGE DU TABLEAU DE BORD (Page de lancement) ---
 st.title("📊 Tableau de Bord - Accueil")
 
 st.sidebar.title("Navigation")
@@ -45,7 +46,7 @@ if st.sidebar.button("Déconnexion"):
     st.session_state.authenticated = False
     st.rerun()
 
-# KPIs
+# Récupération des données pour les KPIs
 metrics = get_dashboard_metrics()
 c1, c2, c3, c4 = st.columns(4)
 
@@ -64,6 +65,8 @@ st.markdown("<br>", unsafe_allow_html=True)
 st.subheader("📋 Suivi des flux en temps réel")
 df = get_all_pesees()
 if not df.empty:
-    st.dataframe(df[["matricule_camion", "produit", "poids_tare", "statut", "date_heure_entree"]], use_container_width=True, hide_index=True)
+    # On affiche les colonnes essentielles pour le dashboard
+    cols_to_show = ["matricule_camion", "produit", "poids_tare", "statut", "date_heure_entree"]
+    st.dataframe(df[cols_to_show], use_container_width=True, hide_index=True)
 else:
     st.info("Aucun mouvement enregistré aujourd'hui.")
