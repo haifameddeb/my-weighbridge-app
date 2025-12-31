@@ -1,20 +1,44 @@
 import streamlit as st
-from database import init_db, get_dashboard_metrics, get_all_pesees
+import pandas as pd
+import sqlite3
 
-st.set_page_config(page_title="Dashboard Medigrain", layout="wide")
+st.set_page_config(page_title="Gestion Flux Camions", layout="wide")
+
+# Initialisation de la base de données
+def init_db():
+    conn = sqlite3.connect('logistique.db')
+    c = conn.cursor()
+    c.execute('''CREATE TABLE IF NOT EXISTS flux_camions
+                 (NUM_QUIT TEXT, NUM_PESEE TEXT, CAMION TEXT, TRANSPORTUR TEXT, 
+                  DH_TARE TEXT, TARE REAL, STATUT TEXT, DH_ORDRE TEXT, 
+                  ARTICLE TEXT, QTE_PREV REAL, DH_DEB_CHARG TEXT, 
+                  DH_FIN_CHARG TEXT, POIDS_BRUT REAL, POIDS_NET REAL)''')
+    conn.commit()
+    conn.close()
+
 init_db()
 
-st.title("📊 Tableau de Bord Logistique")
+# Authentification simplifiée
+if 'logged_in' not in st.session_state:
+    st.session_state.logged_in = False
 
-m = get_dashboard_metrics()
-c1, c2, c3, c4, c5 = st.columns(5)
-c1.metric("1. Tare Prise", m['tare'])
-c2.metric("2. Ordre Chargement", m['ordre'])
-c3.metric("3. En Cours", m['cours'])
-c4.metric("4. Chargé", m['charge'])
-c5.metric("5. Pesé (Sortie)", m['pese'])
+if not st.session_state.logged_in:
+    st.title("🔐 Connexion")
+    user = st.text_input("Utilisateur")
+    pw = st.text_input("Mot de passe", type="password")
+    if st.button("Se connecter"):
+        if user == "admin" and pw == "admin":
+            st.session_state.logged_in = True
+            st.rerun()
+else:
+    st.title("📊 Tableau de Bord - Accueil")
+    conn = sqlite3.connect('logistique.db')
+    df = pd.read_sql("SELECT STATUT, COUNT(*) as Total FROM flux_camions GROUP BY STATUT", conn)
+    conn.close()
 
-st.divider()
-df = get_all_pesees()
-if not df.empty:
-    st.dataframe(df[["matricule_camion", "produit", "statut", "date_heure_entree"]], use_container_width=True)
+    if not df.empty:
+        cols = st.columns(len(df))
+        for i, row in df.iterrows():
+            cols[i].metric(label=row['STATUT'], value=row['Total'])
+    else:
+        st.info("Aucune donnée en base pour le moment.")
