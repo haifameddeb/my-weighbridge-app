@@ -1,37 +1,21 @@
 import sqlite3
+import os
 
-def init_db():
-    # Connexion à la base de données (crée le fichier s'il n'existe pas)
-    conn = sqlite3.connect('logistique.db')
-    cursor = conn.cursor()
-
-    # Création de la table selon la structure fournie dans les spécifications
-    # Type Alpha -> TEXT
-    # Type Numérique -> REAL ou INTEGER
-    # Type Date/Heure -> TEXT (Format ISO ou DD/MM/YYYY HH:MM)
+def reset_db():
+    # Supprime l'ancienne base pour repartir à neuf
+    if os.path.exists('logistique.db'):
+        os.remove('logistique.db')
     
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS flux_camions (
-            NUM_QUIT TEXT,          -- Alpha : Numéro de quittance
-            NUM_PESEE TEXT,         -- Alpha : Numéro de pesée
-            CAMION TEXT,            -- Alpha : Matricule du camion
-            TRANSPORTUR TEXT,       -- Alpha : Nom du transporteur
-            DH_TARE TEXT,           -- Date/Heure : Date et heure de la prise de tare
-            TARE REAL,              -- Numérique : Poids de la tare
-            STATUT TEXT,            -- Alpha : État actuel du camion (ex: 'Tare prise')
-            DH_ORDRE TEXT,          -- Date/Heure : Date et heure de l'ordre
-            ARTICLE TEXT,           -- Alpha : Désignation de l'article
-            QTE_PREV REAL,          -- Numérique : Quantité prévue
-            DH_DEB_CHARG TEXT,      -- Date/Heure : Début du chargement
-            DH_FIN_CHARG TEXT,      -- Date/Heure : Fin du chargement
-            POIDS_BRUT REAL,        -- Numérique : Poids total à la sortie
-            POIDS_NET REAL          -- Numérique : Poids chargé (Calculé)
-        )
-    ''')
-
+    conn = sqlite3.connect('logistique.db')
+    c = conn.cursor()
+    # On respecte EXACTEMENT les noms utilisés dans vos fichiers 1_, 2_, etc.
+    c.execute('''CREATE TABLE flux_camions
+                 (NUM_QUIT TEXT, NUM_PESEE TEXT, CAMION TEXT, TRANSPORTUR TEXT, 
+                  DH_TARE TEXT, TARE REAL, STATUT TEXT, DH_ORDRE TEXT, 
+                  ARTICLE TEXT, QTE_PREV REAL, DH_DEB_CHARG TEXT, 
+                  DH_FIN_CHARG TEXT, POIDS_BRUT REAL, POIDS_NET REAL)''')
     conn.commit()
     conn.close()
-    print("Base de données initialisée avec succès.")
+    print("Base de données réinitialisée avec la structure correcte.")
 
-if __name__ == "__main__":
-    init_db()
+reset_db()
