@@ -42,10 +42,10 @@ with st.form("form_tare", clear_on_submit=True):
                 conn = sqlite3.connect('logistique.db')
                 c = conn.cursor()
                 
-                # Insertion avec l'orthographe TRANPORTEUR validée précédemment
-                # Note : Assurez-vous que votre database.py utilise bien TRANPORTEUR
+                # Insertion avec l'orthographe TRANSPORTEUR validée précédemment
+                # Note : Assurez-vous que votre database.py utilise bien TRANSPORTEUR
                 c.execute("""INSERT INTO flux_camions 
-                             (NUM_QUIT, NUM_PESEE, CAMION, TRANPORTEUR, TARE, DH_TARE, STATUT) 
+                             (NUM_QUIT, NUM_PESEE, CAMION, TRANSPORTEUR, TARE, DH_TARE, STATUT) 
                              VALUES (?, ?, ?, ?, ?, ?, ?)""", 
                           (num_quit, num_pesee, camion, transporteur, tare, dh_now, "Tare prise"))
                 
@@ -54,7 +54,7 @@ with st.form("form_tare", clear_on_submit=True):
                 st.success(f"✅ Camion {camion} enregistré au statut 'Tare prise'.")
                 st.rerun() # Rafraîchit pour vider visuellement les champs après succès
             except sqlite3.OperationalError as e:
-                # Alerte spécifique en cas d'erreur de nom de colonne (ex: TRANSPORTEUR vs TRANPORTEUR)
+                # Alerte spécifique en cas d'erreur de nom de colonne (ex: TRANSPORTEUR vs TRANSPORTEUR)
                 st.error(f"Erreur de structure de base de données : {e}")
             except Exception as e:
                 st.error(f"Erreur lors de l'enregistrement : {e}")
@@ -63,11 +63,12 @@ with st.form("form_tare", clear_on_submit=True):
 st.subheader("Dernières arrivées")
 try:
     conn_list = sqlite3.connect('logistique.db')
-    # Utilisation de TRANPORTEUR pour correspondre à la requête de tableau de bord corrigée
-    query = "SELECT CAMION, TRANPORTEUR, DH_TARE FROM flux_camions WHERE STATUT='Tare prise' ORDER BY DH_TARE DESC"
+    # Utilisation de TRANSPORTEUR pour correspondre à la requête de tableau de bord corrigée
+    query = "SELECT CAMION, TRANSPORTEUR, DH_TARE FROM flux_camions WHERE STATUT='Tare prise' ORDER BY DH_TARE DESC"
     df_recent = conn_list.execute(query).fetchall()
     if df_recent:
         st.table(df_recent)
     conn_list.close()
 except:
     st.info("Aucun camion en attente pour le moment.")
+
