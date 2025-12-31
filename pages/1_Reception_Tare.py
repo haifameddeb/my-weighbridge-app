@@ -31,9 +31,9 @@ with st.form("form_tare", clear_on_submit=True):
                 conn = sqlite3.connect('logistique.db')
                 c = conn.cursor()
                 
-                # Utilisation de TRANPORTEUR pour correspondre à la DB
+                # Utilisation de TRANSPORTEUR pour correspondre à la DB
                 c.execute("""INSERT INTO flux_camions 
-                             (NUM_QUIT, NUM_PESEE, CAMION, TRANPORTEUR, TARE, DH_TARE, STATUT) 
+                             (NUM_QUIT, NUM_PESEE, CAMION, TRANSPORTEUR, TARE, DH_TARE, STATUT) 
                              VALUES (?, ?, ?, ?, ?, ?, ?)""", 
                           (num_quit, num_pesee, camion, transporteur, tare, dh_now, "Tare prise"))
                 
@@ -46,7 +46,8 @@ with st.form("form_tare", clear_on_submit=True):
 # Affichage des camions déjà arrivés pour vérification
 st.subheader("Dernières arrivées")
 conn = sqlite3.connect('logistique.db')
-df = sqlite3.connect('logistique.db').execute("SELECT CAMION, TRANPORTEUR, DH_TARE FROM flux_camions WHERE STATUT='Tare prise' ORDER BY DH_TARE DESC").fetchall()
+df = sqlite3.connect('logistique.db').execute("SELECT CAMION, TRANSPORTEUR, DH_TARE FROM flux_camions WHERE STATUT='Tare prise' ORDER BY DH_TARE DESC").fetchall()
 if df:
     st.table(df)
 conn.close()
+
