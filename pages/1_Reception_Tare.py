@@ -1,25 +1,32 @@
 import streamlit as st
 from database import add_tare
 
-st.title("📥 Étape 1 : Réception & Tare")
+st.set_page_config(page_title="Arrivée camion / Tare", layout="centered")
 
-with st.form("form_reception"):
-    col1, col2 = st.columns(2)
-    with col1:
-        q = st.text_input("N° Quittance Tare")
-        p = st.text_input("N° de Pesée")
-        m = st.text_input("Matricule Camion")
-    with col2:
-        trans = st.text_input("Transporteur")
-        prod = st.selectbox("Produit", ["BLÉ", "MAÏS", "ORGE", "SOJA"])
-        w = st.number_input("Poids Tare (KG)", min_value=0.0)
+st.title("Arrivée camion / Tare")
+
+# Formulaire respectant strictement la liste des champs
+with st.container():
+    num_quittance = st.text_input("N° Quittance tare", placeholder="Saisir le numéro...")
+    num_pesee = st.text_input("N° de pesée", placeholder="Saisir le numéro...")
+    poids_entree = st.number_input("Poids d'entrée (KG)", min_value=0.0, step=10.0)
     
-    submit = st.form_submit_button("VALIDER L'ENTRÉE")
+    # Information : La date/heure sera stockée automatiquement lors du clic
+    st.info("Date / Heure d'entrée : Sera enregistrée automatiquement")
     
-    if submit:
-        if m and w > 0:
-            # On envoie 6 arguments ici (q, p, m, trans, prod, w)
-            add_tare(q, p, m, trans, prod, w)
-            st.success(f"Camion {m} enregistré !")
+    matricule = st.text_input("Matricule camion")
+    transporteur = st.text_input("Transporteur")
+
+    # Bouton Scan Quittance (Simulé ici par un bouton décoratif selon CDC) 
+    if st.button("🔍 Scanner quittance STAM", use_container_width=True):
+        st.write("Fonction de scan activée...")
+
+    st.markdown("---")
+    
+    # Bouton Enregistrer pour valider l'entrée au statut 'Tare prise'
+    if st.button("Enregistrer", type="primary", use_container_width=True):
+        if num_quittance and num_pesee and matricule and poids_entree > 0:
+            add_tare(num_quittance, num_pesee, matricule, transporteur, poids_entree)
+            st.success(f"Camion {matricule} enregistré au statut 'Tare prise'")
         else:
-            st.error("Veuillez remplir le matricule et le poids.")
+            st.error("Veuillez remplir tous les champs obligatoires.")
