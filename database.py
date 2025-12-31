@@ -10,17 +10,17 @@ def init_db():
     c.execute('''
         CREATE TABLE IF NOT EXISTS pesees (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            numero_quittance_tare TEXT,
-            numero_pesee TEXT,
+            num_quittance_tare TEXT,
+            num_pesee TEXT,
             matricule_camion TEXT,
             transporteur TEXT,
-            chauffeur TEXT,
             produit TEXT,
             poids_tare REAL,
+            poids_brut REAL DEFAULT 0,
+            poids_net REAL DEFAULT 0,
+            silo_affecte TEXT,
+            statut TEXT,
             date_heure_entree TIMESTAMP,
-            statut TEXT DEFAULT 'Tare prise',
-            poids_brut REAL,
-            poids_net REAL,
             date_heure_sortie TIMESTAMP
         )
     ''')
@@ -31,11 +31,39 @@ def add_tare(quittance, pesee, matricule, transporteur, produit, poids, date_heu
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
     c.execute('''
-        INSERT INTO pesees (numero_quittance_tare, numero_pesee, matricule_camion, transporteur, produit, poids_tare, date_heure_entree, statut)
+        INSERT INTO pesees (num_quittance_tare, num_pesee, matricule_camion, transporteur, produit, poids_tare, date_heure_entree, statut)
         VALUES (?, ?, ?, ?, ?, ?, ?, 'Tare prise')
     ''', (quittance, pesee, matricule, transporteur, produit, poids, date_heure))
     conn.commit()
     conn.close()
+
+def update_to_loading(id_pesee, silo):
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("UPDATE pesees SET statut = 'En cours de chargement', silo_affecte = ? WHERE id = ?", (silo, id_pesee))
+    conn.commit()
+    conn.close()
+
+def update_to_loaded(id_pesee):
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("UPDATE pesees SET statut = 'Chargé' WHERE id = ?", (id_pesee,))
+    conn.commit()
+    conn.close()
+
+def finalize_weighing(id_pesee, poids_brut):
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("SELECT poids_tare FROM pesees WHERE id = ?", (id_pesee,))
+    poids_tare = c.fetchone()[0]
+    poids_net = poids_brut - poids_tare
+    c.execute('''
+        UPDATE pesees SET poids_brut = ?, poids_net = ?, statut = 'Pesé', date_heure_sortie = ?
+        WHERE id = ?
+    ''', (poids_brut, poids_net, datetime.now(), id_pesee))
+    conn.commit()
+    conn.close()
+    return poids_net
 
 def get_all_pesees():
     conn = sqlite3.connect(DB_NAME)
@@ -46,25 +74,17 @@ def get_all_pesees():
 def get_dashboard_metrics():
     df = get_all_pesees()
     if df.empty:
-        return {"tare_prise": 0, "en_cours": 0, "termine": 0, "total": 0}
-    
+        return {"tare": 0, "chargement": 0, "charge": 0, "pese": 0, "total": 0}
     return {
-        "tare_prise": len(df[df['statut'] == 'Tare prise']),
-        "en_cours": len(df[df['statut'] == 'En cours']),
-        "termine": len(df[df['statut'] == 'Pesé']),
+        "tare": len(df[df['statut'] == 'Tare prise']),
+        "chargement": len(df[df['statut'] == 'En cours de chargement']),
+        "charge": len(df[df['statut'] == 'Chargé']),
+        "pese": len(df[df['statut'] == 'Pesé']),
         "total": len(df)
     }
 
-def get_waiting_trucks():
+def get_trucks_by_status(status):
     conn = sqlite3.connect(DB_NAME)
-    df = pd.read_sql_query("SELECT * FROM pesees WHERE statut = 'Tare prise'", conn)
+    df = pd.read_sql_query("SELECT * FROM pesees WHERE statut = ?", conn, params=(status,))
     conn.close()
     return df
-
-def update_to_loading(id_pesee, silo):
-    conn = sqlite3.connect(DB_NAME)
-    c = conn.cursor()
-    # On harmonise le statut sur 'En cours' pour correspondre au dashboard
-    c.execute("UPDATE pesees SET statut = 'En cours', transporteur = transporteur || ' (Silo: ' || ? || ')' WHERE id = ?", (silo, id_pesee))
-    conn.commit()
-    conn.close()
