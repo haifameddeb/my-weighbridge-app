@@ -27,7 +27,7 @@ def init_db():
     conn.commit()
     conn.close()
 
-# ÉTAPE 1 : Arrivée Camion
+# ÉTAPE 1 : Corrigé pour accepter exactement ce que le formulaire envoie
 def add_tare(q, p, m, t, pr, w):
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
@@ -36,7 +36,7 @@ def add_tare(q, p, m, t, pr, w):
     conn.commit()
     conn.close()
 
-# ÉTAPE 2 : Affectation Silo
+# ÉTAPE 2 : Affectation
 def update_to_ordre(id_p, silo):
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
@@ -44,7 +44,7 @@ def update_to_ordre(id_p, silo):
     conn.commit()
     conn.close()
 
-# ÉTAPE 3 : Début Chargement
+# ÉTAPE 3 : Début de chargement
 def update_to_loading(id_p):
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
@@ -52,7 +52,7 @@ def update_to_loading(id_p):
     conn.commit()
     conn.close()
 
-# ÉTAPE 4 : Fin Chargement
+# ÉTAPE 4 : Fin de chargement
 def update_to_loaded(id_p):
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
@@ -60,7 +60,7 @@ def update_to_loaded(id_p):
     conn.commit()
     conn.close()
 
-# ÉTAPE 5 : Pesée Finale
+# ÉTAPE 5 : Pesée finale
 def finalize_pese(id_p, pb):
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
@@ -87,12 +87,8 @@ def get_dashboard_metrics():
 
 def get_all_pesees():
     conn = sqlite3.connect(DB_NAME)
-    df = pd.read_sql_query("SELECT * FROM pesees ORDER BY date_heure_entree DESC", conn)
-    conn.close()
-    return df
+    return pd.read_sql_query("SELECT * FROM pesees ORDER BY date_heure_entree DESC", conn)
 
 def get_trucks_by_status(st):
     conn = sqlite3.connect(DB_NAME)
-    df = pd.read_sql_query("SELECT * FROM pesees WHERE statut = ?", conn, params=(st,))
-    conn.close()
-    return df
+    return pd.read_sql_query("SELECT * FROM pesees WHERE statut = ?", conn, params=(st,))
