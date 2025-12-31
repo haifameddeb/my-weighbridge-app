@@ -69,8 +69,9 @@ else:
     # Optionnel : Vue détaillée
     if st.checkbox("Afficher le détail des camions par statut"):
         conn = sqlite3.connect('logistique.db')
-        df_all = pd.read_sql("SELECT CAMION, TRANSPORTUR, STATUT, DH_TARE FROM flux_camions", conn)
+        df_all = pd.read_sql("SELECT CAMION, TRANSPORTEUR, STATUT, DH_TARE FROM flux_camions", conn)
         conn.close()
         st.dataframe(df_all, use_container_width=True)
 
     st.sidebar.success("Connecté : Admin")
+
