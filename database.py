@@ -51,4 +51,19 @@ def get_dashboard_metrics():
         "en_cours": len(df[df['statut'] == 'En cours de chargement']),
         "termine": len(df[df['statut'] == 'Pesé']),
         "total": len(df)
+
     }
+    def get_waiting_trucks():
+    conn = sqlite3.connect("pont_bascule.db")
+    # On ne récupère que ceux qui n'ont que la Tare
+    df = pd.read_sql_query("SELECT * FROM pesees WHERE statut = 'Tare prise'", conn)
+    conn.close()
+    return df
+
+def update_to_loading(id_pesee, silo):
+    conn = sqlite3.connect("pont_bascule.db")
+    c = conn.cursor()
+    # On met à jour le statut et on pourrait stocker le silo dans une nouvelle colonne
+    c.execute("UPDATE pesees SET statut = 'En cours', transporteur = transporteur || ' (Silo: ' || ? || ')' WHERE id = ?", (silo, id_pesee))
+    conn.commit()
+    conn.close()
