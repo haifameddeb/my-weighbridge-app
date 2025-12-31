@@ -3,6 +3,11 @@ import sqlite3
 import pandas as pd
 from datetime import datetime
 
+# Contrôle d'accès
+if 'auth' not in st.session_state or not st.session_state.auth:
+    st.warning("⚠️ Accès refusé. Veuillez vous connecter.")
+    st.stop()
+
 st.title("📝 Ordre de Chargement")
 
 conn = sqlite3.connect('logistique.db')
@@ -10,8 +15,9 @@ camions_dispo = pd.read_sql("SELECT CAMION FROM flux_camions WHERE STATUT='Tare 
 
 if not camions_dispo.empty:
     camion_sel = st.selectbox("Sélectionner un camion", camions_dispo['CAMION'])
-    article = st.text_input("Article")
-    qte = st.number_input("Quantité prévue", min_value=0.0)
+    # Pas d'initialisation (champs vides)
+    article = st.text_input("Article", value="")
+    qte = st.number_input("Quantité prévue", min_value=0.0, value=0.0)
     
     if st.button("Valider l'ordre"):
         dh_now = datetime.now().strftime("%d/%m/%Y %H:%M")
@@ -19,6 +25,7 @@ if not camions_dispo.empty:
                      (article, qte, dh_now, camion_sel))
         conn.commit()
         st.success("Ordre de chargement créé.")
+        st.rerun()
 else:
-    st.warning("Aucun camion en attente d'ordre (Statut: Tare prise).")
+    st.warning("Aucun camion en attente d'ordre.")
 conn.close()
