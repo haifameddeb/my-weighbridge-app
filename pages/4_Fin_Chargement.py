@@ -10,7 +10,7 @@ st.title("✅ Fin de Chargement")
 
 conn = sqlite3.connect('logistique.db')
 # On récupère uniquement les camions en cours de chargement
-query = "SELECT CAMION, TRANPORTEUR, TARE, ARTICLE, DH_DEB_CHARG FROM flux_camions WHERE STATUT='En cours de chargement'"
+query = "SELECT CAMION, TRANSPORTEUR, TARE, ARTICLE, DH_DEB_CHARG FROM flux_camions WHERE STATUT='En cours de chargement'"
 df_en_cours = pd.read_sql(query, conn)
 
 if not df_en_cours.empty:
@@ -21,7 +21,7 @@ if not df_en_cours.empty:
     
     col1, col2 = st.columns(2)
     with col1:
-        st.success(f"**Transporteur :** {infos['TRANPORTEUR']}")
+        st.success(f"**Transporteur :** {infos['TRANSPORTEUR']}")
         st.success(f"**Article :** {infos['ARTICLE']}")
     with col2:
         st.success(f"**Tare :** {infos['TARE']} kg")
