@@ -1,7 +1,15 @@
 import streamlit as st
 import pandas as pd
 from database import init_db, get_all_pesees, get_dashboard_metrics
-
+# --- HACK POUR CACHER LE FOOTER ET LE MENU ---
+st.markdown("""
+    <style>
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    header {visibility: hidden;}
+    #stDecoration {display:none !important;}
+    </style>
+""", unsafe_allow_html=True)
 # Configuration de la page
 st.set_page_config(page_title="Pont Bascule - Medigrain", page_icon="📊", layout="wide")
 
@@ -79,4 +87,5 @@ if not df.empty:
     st.dataframe(df[["matricule_camion", "produit", "poids_tare", "statut", "date_heure_entree"]], use_container_width=True, hide_index=True)
 else:
     st.info("Aucun mouvement enregistré aujourd'hui.")
+
 
