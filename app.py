@@ -3,8 +3,8 @@ import pandas as pd
 import sqlite3
 
 # Configuration
-#st.set_page_config(page_title="Logistique Camions", layout="wide")
-st.set_page_config(page_title="Tableau de Bord", page_icon="📊")
+st.set_page_config(page_title="Logistique Camions", layout="wide")
+#st.set_page_config(page_title="Tableau de Bord", page_icon="📊")
 #st.title("📊 Tableau de Bord")
 def get_stats():
     # Liste fixe des statuts selon votre workflow
@@ -75,6 +75,7 @@ else:
         st.dataframe(df_all, use_container_width=True)
 
     st.sidebar.success("Connecté : Admin")
+
 
 
 
