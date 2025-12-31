@@ -2,34 +2,34 @@ import sqlite3
 import os
 
 def init_db():
-    db_path = 'logistique.db'
-    
-    # Optionnel : Décommentez la ligne suivante si vous voulez forcer la remise à zéro
-    # if os.path.exists(db_path): os.remove(db_path)
-    
-    conn = sqlite3.connect(db_path)
+    conn = sqlite3.connect('logistique.db')
     c = conn.cursor()
     
-    # Création de la table avec l'orthographe correcte : TRANSPORTEUR
-    c.execute('''CREATE TABLE IF NOT EXISTS flux_camions
-                 (NUM_QUIT TEXT, 
-                  NUM_PESEE TEXT, 
-                  CAMION TEXT, 
-                  TRANSPORTEUR TEXT, 
-                  DH_TARE TEXT, 
-                  TARE REAL, 
-                  STATUT TEXT, 
-                  DH_ORDRE TEXT, 
-                  ARTICLE TEXT, 
-                  QTE_PREV REAL, 
-                  DH_DEB_CHARG TEXT, 
-                  DH_FIN_CHARG TEXT, 
-                  POIDS_BRUT REAL, 
-                  POIDS_NET REAL)''')
+    # Vérification si la colonne correcte existe, sinon on recrée
+    try:
+        c.execute("SELECT TRANPORTEUR FROM flux_camions LIMIT 1")
+    except sqlite3.OperationalError:
+        # Si erreur, cela signifie que la colonne TRANPORTEUR n'existe pas
+        # On supprime et on recrée avec la bonne structure
+        c.execute("DROP TABLE IF EXISTS flux_camions")
+        c.execute('''CREATE TABLE flux_camions
+                     (NUM_QUIT TEXT, 
+                      NUM_PESEE TEXT, 
+                      CAMION TEXT, 
+                      TRANPORTEUR TEXT, 
+                      DH_TARE TEXT, 
+                      TARE REAL, 
+                      STATUT TEXT, 
+                      DH_ORDRE TEXT, 
+                      ARTICLE TEXT, 
+                      QTE_PREV REAL, 
+                      DH_DEB_CHARG TEXT, 
+                      DH_FIN_CHARG TEXT, 
+                      POIDS_BRUT REAL, 
+                      POIDS_NET REAL)''')
+        conn.commit()
     
-    conn.commit()
     conn.close()
-    print("Base de données initialisée avec le champ TRANSPORTEUR.")
 
 if __name__ == "__main__":
     init_db()
