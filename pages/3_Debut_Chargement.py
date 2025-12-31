@@ -10,7 +10,7 @@ st.title("⏳ Début de Chargement")
 
 conn = sqlite3.connect('logistique.db')
 # On récupère les camions qui ont un ordre mais n'ont pas encore commencé
-query = "SELECT CAMION, TRANPORTEUR, TARE, ARTICLE, DH_ORDRE FROM flux_camions WHERE STATUT='Ordre de chargement'"
+query = "SELECT CAMION, TRANSPORTEUR, TARE, ARTICLE, DH_ORDRE FROM flux_camions WHERE STATUT='Ordre de chargement'"
 df_dispo = pd.read_sql(query, conn)
 
 if not df_dispo.empty:
@@ -21,7 +21,7 @@ if not df_dispo.empty:
     
     col1, col2 = st.columns(2)
     with col1:
-        st.info(f"**Transporteur :** {infos['TRANPORTEUR']}")
+        st.info(f"**Transporteur :** {infos['TRANSPORTEUR']}")
         st.info(f"**Article :** {infos['ARTICLE']}")
     with col2:
         st.info(f"**Tare :** {infos['TARE']} kg")
