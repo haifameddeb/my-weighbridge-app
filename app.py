@@ -2,43 +2,75 @@ import streamlit as st
 import pandas as pd
 import sqlite3
 
-st.set_page_config(page_title="Gestion Flux Camions", layout="wide")
+# Configuration
+st.set_page_config(page_title="Logistique Camions", layout="wide")
 
-# Initialisation de la base de données
-def init_db():
-    conn = sqlite3.connect('logistique.db')
-    c = conn.cursor()
-    c.execute('''CREATE TABLE IF NOT EXISTS flux_camions
-                 (NUM_QUIT TEXT, NUM_PESEE TEXT, CAMION TEXT, TRANSPORTUR TEXT, 
-                  DH_TARE TEXT, TARE REAL, STATUT TEXT, DH_ORDRE TEXT, 
-                  ARTICLE TEXT, QTE_PREV REAL, DH_DEB_CHARG TEXT, 
-                  DH_FIN_CHARG TEXT, POIDS_BRUT REAL, POIDS_NET REAL)''')
-    conn.commit()
-    conn.close()
+def get_stats():
+    # Liste fixe des statuts selon votre workflow
+    statuts_reference = [
+        "Tare prise", 
+        "Ordre de chargement", 
+        "En cours de chargement", 
+        "Fin de chargement", 
+        "Pesée effectuée"
+    ]
+    
+    try:
+        conn = sqlite3.connect('logistique.db')
+        df_real = pd.read_sql("SELECT STATUT, COUNT(*) as NB FROM flux_camions GROUP BY STATUT", conn)
+        conn.close()
+    except:
+        # Si la table n'existe pas encore
+        df_real = pd.DataFrame(columns=['STATUT', 'NB'])
 
-init_db()
+    # Fusion avec la liste de référence pour garantir l'affichage des zéros
+    df_ref = pd.DataFrame({'STATUT': statuts_reference})
+    df_final = pd.merge(df_ref, df_real, on='STATUT', how='left').fillna(0)
+    df_final['NB'] = df_final['NB'].astype(int)
+    
+    return df_final
 
-# Authentification simplifiée
-if 'logged_in' not in st.session_state:
-    st.session_state.logged_in = False
+# --- AUTHENTIFICATION ---
+if 'auth' not in st.session_state:
+    st.session_state.auth = False
 
-if not st.session_state.logged_in:
+if not st.session_state.auth:
     st.title("🔐 Connexion")
-    user = st.text_input("Utilisateur")
-    pw = st.text_input("Mot de passe", type="password")
-    if st.button("Se connecter"):
-        if user == "admin" and pw == "admin":
-            st.session_state.logged_in = True
-            st.rerun()
+    with st.container():
+        user = st.text_input("Identifiant")
+        pw = st.text_input("Mot de passe", type="password")
+        if st.button("Se connecter", use_container_width=True):
+            if user == "admin" and pw == "admin":
+                st.session_state.auth = True
+                st.rerun()
 else:
-    st.title("📊 Tableau de Bord - Accueil")
-    conn = sqlite3.connect('logistique.db')
-    df = pd.read_sql("SELECT STATUT, COUNT(*) as Total FROM flux_camions GROUP BY STATUT", conn)
-    conn.close()
+    # --- TABLEAU DE BORD ---
+    st.title("📊 Tableau de Bord - Suivi en Temps Réel")
+    st.markdown("---")
+    
+    stats = get_stats()
+    
+    # Création de 5 colonnes pour l'ergonomie
+    cols = st.columns(5)
+    
+    # Couleurs et icônes pour chaque étape
+    icons = ["🚛", "📝", "⏳", "✅", "⚖️"]
+    
+    for i, row in stats.iterrows():
+        with cols[i]:
+            # Utilisation d'un container pour styliser l'affichage
+            st.metric(
+                label=f"{icons[i]} {row['STATUT']}", 
+                value=row['NB']
+            )
+    
+    st.markdown("---")
+    
+    # Optionnel : Vue détaillée
+    if st.checkbox("Afficher le détail des camions par statut"):
+        conn = sqlite3.connect('logistique.db')
+        df_all = pd.read_sql("SELECT CAMION, TRANSPORTUR, STATUT, DH_TARE FROM flux_camions", conn)
+        conn.close()
+        st.dataframe(df_all, use_container_width=True)
 
-    if not df.empty:
-        cols = st.columns(len(df))
-        for i, row in df.iterrows():
-            cols[i].metric(label=row['STATUT'], value=row['Total'])
-    else:
-        st.info("Aucune donnée en base pour le moment.")
+    st.sidebar.success("Connecté : Admin")
