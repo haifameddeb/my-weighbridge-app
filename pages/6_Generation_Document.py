@@ -71,3 +71,31 @@ else:
     st.info("Aucun camion n'est en attente de génération de document (Statut 'Pesée effectuée' requis).")
 
 conn.close()
+# --- Affichage des documents déjà générés (à ajouter à la fin du fichier) ---
+st.markdown("---")
+st.subheader("📋 Historique des documents générés")
+
+try:
+    # On rouvre une connexion pour la lecture
+    conn_hist = sqlite3.connect('logistique.db')
+    
+    # Requête pour récupérer les documents avec les infos clés
+    query_hist = """
+        SELECT ID_DOC, CAMION, FOURNISSEUR, NUM_CMD_FOURN, RAISON_SOCIALE, DH_GENERATION 
+        FROM documents_generes 
+        ORDER BY ID_DOC DESC
+    """
+    df_hist = pd.read_sql(query_hist, conn_hist)
+    conn_hist.close()
+
+    if not df_hist.empty:
+        # Renommage des colonnes pour un affichage propre
+        df_hist.columns = ["ID", "Matricule", "Fournisseur", "N° Commande F.", "Client", "Date Génération"]
+        
+        # Affichage sous forme de tableau interactif
+        st.dataframe(df_hist, use_container_width=True, hide_index=True)
+    else:
+        st.info("Aucun document n'a encore été généré.")
+
+except Exception as e:
+    st.error(f"Erreur lors de la lecture de l'historique : {e}")
