@@ -1,11 +1,32 @@
 import streamlit as st
-from database import get_trucks_by_status, update_to_loaded
+import sqlite3
+import pandas as pd
+from datetime import datetime
 
-st.title("🚛 Étape 3 : Confirmation Chargement")
-trucks = get_trucks_by_status('En cours de chargement')
-if not trucks.empty:
-    sel = st.selectbox("Camion chargé", trucks['matricule_camion'])
-    id_p = trucks[trucks['matricule_camion'] == sel]['id'].values[0]
-    if st.button("Confirmer"):
-        update_to_loaded(id_p)
-        st.success("Chargement terminé")
+st.title("⏳ Confirmation de Chargement")
+
+conn = sqlite3.connect('logistique.db')
+col1, col2 = st.columns(2)
+
+with col1:
+    st.subheader("Début")
+    dispo_deb = pd.read_sql("SELECT CAMION FROM flux_camions WHERE STATUT='Ordre de chargement'", conn)
+    if not dispo_deb.empty:
+        cam_deb = st.selectbox("Camion à charger", dispo_deb['CAMION'])
+        if st.button("Démarrer Chargement"):
+            dh = datetime.now().strftime("%d/%m/%Y %H:%M")
+            conn.execute("UPDATE flux_camions SET DH_DEB_CHARG=?, STATUT='En cours de chargement' WHERE CAMION=?", (dh, cam_deb))
+            conn.commit()
+            st.rerun()
+
+with col2:
+    st.subheader("Fin")
+    dispo_fin = pd.read_sql("SELECT CAMION FROM flux_camions WHERE STATUT='En cours de chargement'", conn)
+    if not dispo_fin.empty:
+        cam_fin = st.selectbox("Camion chargé", dispo_fin['CAMION'])
+        if st.button("Terminer Chargement"):
+            dh = datetime.now().strftime("%d/%m/%Y %H:%M")
+            conn.execute("UPDATE flux_camions SET DH_FIN_CHARG=?, STATUT='Fin de chargement' WHERE CAMION=?", (dh, cam_fin))
+            conn.commit()
+            st.rerun()
+conn.close()
