@@ -16,7 +16,7 @@ st.title("📄 Créer document")
 conn = sqlite3.connect('logistique.db')
 
 # On récupère les camions ayant terminé la pesée finale
-query = "SELECT CAMION, TRANPORTEUR, ARTICLE, POIDS_NET FROM flux_camions WHERE STATUT='Pesée effectuée'"
+query = "SELECT CAMION, TRANSPORTEUR, ARTICLE, POIDS_NET FROM flux_camions WHERE STATUT='Pesée effectuée'"
 df_pret = pd.read_sql(query, conn)
 
 if not df_pret.empty:
@@ -25,7 +25,7 @@ if not df_pret.empty:
     
     # Récupération des données liées au camion sélectionné
     infos_camion = df_pret[df_pret['CAMION'] == camion_sel].iloc[0]
-    st.info(f"Détails : {infos_camion['TRANPORTEUR']} | {infos_camion['ARTICLE']} | {infos_camion['POIDS_NET']} kg")
+    st.info(f"Détails : {infos_camion['TRANSPORTEUR']} | {infos_camion['ARTICLE']} | {infos_camion['POIDS_NET']} kg")
 
     st.markdown("---")
 
