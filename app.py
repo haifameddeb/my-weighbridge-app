@@ -1,39 +1,19 @@
 import streamlit as st
 import pandas as pd
 from database import init_db, get_all_pesees, get_dashboard_metrics
-# --- HACK POUR CACHER LE FOOTER ET LE MENU ---
+
+# Configuration de la page
+st.set_page_config(page_title="Pont Bascule - Medigrain", page_icon="📊", layout="wide")
+
+# Initialisation BDD
+init_db()
+
+# Hack CSS pour masquer les éléments Streamlit et styliser les cartes
 st.markdown("""
     <style>
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     header {visibility: hidden;}
-    #stDecoration {display:none !important;}
-    </style>
-""", unsafe_allow_html=True)
-# Configuration de la page
-st.set_page_config(page_title="Pont Bascule - Medigrain", page_icon="📊", layout="wide")
-
-# Cacher le footer "Created by..." et le menu Streamlit
-st.markdown("""
-    <style>
-    /* Cache le footer "Made with Streamlit" */
-    footer {visibility: hidden;}
-    
-    /* Cache le bouton 'Manage App' et les infos de déploiement pour les non-admin */
-    header {visibility: hidden;}
-    
-    /* Optionnel : Supprimer le padding en haut pour gagner de l'espace */
-    .block-container {
-        padding-top: 1rem;
-    }
-    </style>
-""", unsafe_allow_html=True)
-# Initialisation BDD
-init_db()
-
-# Style CSS pour le look professionnel
-st.markdown("""
-    <style>
     .main { background-color: #f5f5f5; }
     .stButton>button { width: 100%; border-radius: 10px; background-color: #E63946; color: white; }
     </style>
@@ -65,7 +45,7 @@ if st.sidebar.button("Déconnexion"):
     st.session_state.authenticated = False
     st.rerun()
 
-# KPIs comme dans votre version précédente
+# KPIs
 metrics = get_dashboard_metrics()
 c1, c2, c3, c4 = st.columns(4)
 
@@ -87,5 +67,3 @@ if not df.empty:
     st.dataframe(df[["matricule_camion", "produit", "poids_tare", "statut", "date_heure_entree"]], use_container_width=True, hide_index=True)
 else:
     st.info("Aucun mouvement enregistré aujourd'hui.")
-
-
