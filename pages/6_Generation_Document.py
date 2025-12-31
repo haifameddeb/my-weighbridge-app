@@ -71,31 +71,52 @@ else:
     st.info("Aucun camion n'est en attente de génération de document (Statut 'Pesée effectuée' requis).")
 
 conn.close()
-# --- Affichage des documents déjà générés (à ajouter à la fin du fichier) ---
+# --- AFFICHAGE COMPLET DE L'HISTORIQUE ---
 st.markdown("---")
-st.subheader("📋 Historique des documents générés")
+st.subheader("📋 Liste complète des documents générés")
+
+# On ouvre une connexion pour la lecture
+conn_lecture = sqlite3.connect('logistique.db')
 
 try:
-    # On rouvre une connexion pour la lecture
-    conn_hist = sqlite3.connect('logistique.db')
-    
-    # Requête pour récupérer les documents avec les infos clés
-    query_hist = """
-        SELECT ID_DOC, CAMION, FOURNISSEUR, NUM_CMD_FOURN, RAISON_SOCIALE, DH_GENERATION 
+    # On sélectionne absolument TOUTES les colonnes de la table
+    query_complet = """
+        SELECT 
+            ID_DOC, 
+            CAMION, 
+            FOURNISSEUR, 
+            NUM_CMD_FOURN, 
+            CASE WHEN IS_BL_CLIENT = 1 THEN 'Oui' ELSE 'Non' END as BL_CLIENT,
+            CODE_CLIENT, 
+            RAISON_SOCIALE, 
+            NUM_CMD_CLIENT, 
+            DH_GENERATION 
         FROM documents_generes 
         ORDER BY ID_DOC DESC
     """
-    df_hist = pd.read_sql(query_hist, conn_hist)
-    conn_hist.close()
+    
+    df_complet = pd.read_sql(query_complet, conn_lecture)
 
-    if not df_hist.empty:
-        # Renommage des colonnes pour un affichage propre
-        df_hist.columns = ["ID", "Matricule", "Fournisseur", "N° Commande F.", "Client", "Date Génération"]
+    if not df_complet.empty:
+        # On renomme les colonnes pour que ce soit lisible
+        df_complet.columns = [
+            "ID", "Matricule", "Fournisseur", "Commande F.", 
+            "Option BL", "Code Client", "Client", "Commande C.", "Date/Heure"
+        ]
         
-        # Affichage sous forme de tableau interactif
-        st.dataframe(df_hist, use_container_width=True, hide_index=True)
+        # Affichage avec barre de défilement automatique
+        st.dataframe(
+            df_complet, 
+            use_container_width=True, 
+            hide_index=True
+        )
+        
+        st.caption("💡 Utilisez la barre de défilement en bas du tableau pour voir toutes les colonnes.")
     else:
-        st.info("Aucun document n'a encore été généré.")
+        st.info("Aucun document n'a été généré pour le moment.")
 
 except Exception as e:
-    st.error(f"Erreur lors de la lecture de l'historique : {e}")
+    st.error(f"Erreur lors de l'affichage des données : {e}")
+
+finally:
+    conn_lecture.close()
