@@ -46,7 +46,7 @@ if not st.session_state.auth:
                 st.rerun()
 else:
     # --- TABLEAU DE BORD ---
-    st.title("📊 Tableau de Bord - Suivi en Temps Réel")
+    st.title("📊 Suivi en Temps Réel")
     st.markdown("---")
     
     stats = get_stats()
@@ -75,6 +75,7 @@ else:
         st.dataframe(df_all, use_container_width=True)
 
     st.sidebar.success("Connecté : Admin")
+
 
 
 
