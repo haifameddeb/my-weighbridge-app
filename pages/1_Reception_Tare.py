@@ -15,9 +15,10 @@ with st.form("form_tare"):
         dh_now = datetime.now().strftime("%d/%m/%Y %H:%M")
         conn = sqlite3.connect('logistique.db')
         c = conn.cursor()
-        c.execute("""INSERT INTO flux_camions (NUM_QUIT, NUM_PESEE, CAMION, TRANSPORTUR, TARE, DH_TARE, STATUT) 
+        c.execute("""INSERT INTO flux_camions (NUM_QUIT, NUM_PESEE, CAMION, TRANSPORTEUR, TARE, DH_TARE, STATUT) 
                      VALUES (?, ?, ?, ?, ?, ?, ?)""", 
                   (num_quit, num_pesee, camion, transporteur, tare, dh_now, "Tare prise"))
         conn.commit()
         conn.close()
         st.success(f"Camion {camion} enregistré avec succès.")
+
