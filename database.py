@@ -7,7 +7,6 @@ DB_NAME = "pont_bascule.db"
 def init_db():
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
-    # Table principale basée sur les champs identifiés dans le CDC [cite: 4, 8, 97-99]
     c.execute('''
         CREATE TABLE IF NOT EXISTS pesees (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -19,7 +18,7 @@ def init_db():
             produit TEXT,
             poids_tare REAL,
             date_heure_entree TIMESTAMP,
-            statut TEXT DEFAULT 'En cours', -- En cours, Chargé, Pesé, Sorti
+            statut TEXT DEFAULT 'Tare prise',
             poids_brut REAL,
             poids_net REAL,
             date_heure_sortie TIMESTAMP
@@ -46,24 +45,26 @@ def get_all_pesees():
 
 def get_dashboard_metrics():
     df = get_all_pesees()
+    if df.empty:
+        return {"tare_prise": 0, "en_cours": 0, "termine": 0, "total": 0}
+    
     return {
         "tare_prise": len(df[df['statut'] == 'Tare prise']),
-        "en_cours": len(df[df['statut'] == 'En cours de chargement']),
+        "en_cours": len(df[df['statut'] == 'En cours']),
         "termine": len(df[df['statut'] == 'Pesé']),
         "total": len(df)
-
     }
-    def get_waiting_trucks():
-    conn = sqlite3.connect("pont_bascule.db")
-    # On ne récupère que ceux qui n'ont que la Tare
+
+def get_waiting_trucks():
+    conn = sqlite3.connect(DB_NAME)
     df = pd.read_sql_query("SELECT * FROM pesees WHERE statut = 'Tare prise'", conn)
     conn.close()
     return df
 
 def update_to_loading(id_pesee, silo):
-    conn = sqlite3.connect("pont_bascule.db")
+    conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
-    # On met à jour le statut et on pourrait stocker le silo dans une nouvelle colonne
+    # On harmonise le statut sur 'En cours' pour correspondre au dashboard
     c.execute("UPDATE pesees SET statut = 'En cours', transporteur = transporteur || ' (Silo: ' || ? || ')' WHERE id = ?", (silo, id_pesee))
     conn.commit()
     conn.close()
